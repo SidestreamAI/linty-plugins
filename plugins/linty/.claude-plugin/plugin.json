@@ -1,0 +1,10 @@
+{
+  "name": "linty",
+  "displayName": "Linty",
+  "description": "Find food, beverage and pet brands that sell direct, and where to apply for a wholesale account.",
+  "author": { "name": "Sidestream AI", "url": "https://linty.xyz" },
+  "homepage": "https://linty.xyz/agents",
+  "repository": "https://github.com/SidestreamAI/linty-plugins",
+  "license": "MIT",
+  "keywords": ["wholesale", "cpg", "brands", "mcp"]
+}

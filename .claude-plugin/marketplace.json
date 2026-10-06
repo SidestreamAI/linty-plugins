@@ -1,0 +1,12 @@
+{
+  "name": "linty",
+  "description": "The Linty plugin for Claude Code.",
+  "owner": { "name": "Sidestream AI", "url": "https://linty.xyz" },
+  "plugins": [
+    {
+      "name": "linty",
+      "source": "./plugins/linty",
+      "description": "Find food, beverage and pet brands that sell direct, and where to apply for a wholesale account."
+    }
+  ]
+}
