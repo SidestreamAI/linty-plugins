@@ -23,9 +23,19 @@ Linty is a public index of the wholesale programs of food, beverage and pet bran
 - A requirement is often "not verified": Linty saw the field on the form, but no person confirmed it.
 - For the full facts of one brand, call `get_brand`. For its company, call `get_company`.
 
+## Use an account
+
+The account tools need a key. The user makes a key at linty.xyz/account and sets it in `LINTY_API_KEY`. Without a key, the server lists only the free tools.
+
+1. Call `get_account` to see the credits and the profile values that a first application needs.
+2. Call `get_applicant_profile` to read the profile. The EIN and the resale certificate number are masked: never send a masked value back.
+3. Ask the user for each missing value. Then call `update_applicant_profile` with `fields`, `positioning` or `answers`. Never invent a value. Never send the EIN or the resale certificate number in `answers`. Send them in `fields`.
+4. To add a document, call `get_upload_url`, then send the file with an HTTP PUT to `upload_url`.
+5. Call `check_application` for a brand. It lists the required fields and documents that the profile cannot answer.
+
 ## What Linty does not do yet
 
-Linty does not submit applications yet. Give the user the address of the form, portal or email of the brand, from `get_relationship`.
+Linty does not submit applications yet. `submit_application` answers `submission_not_open`. Give the user the address of the form, portal or email of the brand, from `get_relationship`.
 
 ## Report a wrong fact
 
