@@ -5,7 +5,7 @@ description: Find food, beverage and pet brands that sell direct with the Linty 
 
 # Linty
 
-Linty is a public index of the wholesale programs of food, beverage and pet brands. The Linty MCP server reads the same records as linty.xyz. It needs no key.
+Linty is a public index of the wholesale programs of food, beverage and pet brands. The Linty MCP server reads the same records as linty.xyz. The free tools need no key. The account tools need a key.
 
 ## Make a list of brands
 
@@ -25,7 +25,7 @@ Linty is a public index of the wholesale programs of food, beverage and pet bran
 
 ## Use an account
 
-The account tools need a key. The user makes a key at linty.xyz/account and sets it in `LINTY_API_KEY`. Without a key, the server lists only the free tools.
+The account tools need a key. The user makes a key at linty.xyz/account and sets it in `LINTY_API_KEY`. Without a key, the server lists only the free tools. If a tool answers `invalid_key`, or the account tools are missing, the key in `LINTY_API_KEY` is missing, revoked or wrong. Tell the user to make a key at linty.xyz/account and set the variable. Never ask the user to paste the key in the chat.
 
 1. Call `get_account` to see the credits and the profile values that a first application needs.
 2. Call `get_applicant_profile` to read the profile. The EIN and the resale certificate number are masked: never send a masked value back.
