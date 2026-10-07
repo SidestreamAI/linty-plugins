@@ -30,7 +30,7 @@ The account tools need a key. The user makes a key at linty.xyz/account and sets
 1. Call `get_account` to see the credits and the profile values that a first application needs.
 2. Call `get_applicant_profile` to read the profile. The EIN and the resale certificate number are masked: never send a masked value back.
 3. Ask the user for each missing value. Then call `update_applicant_profile` with `fields`, `positioning` or `answers`. Never invent a value. Never send the EIN or the resale certificate number in `answers`. Send them in `fields`.
-4. To add a document, call `get_upload_url`, then send the file with an HTTP PUT to `upload_url`.
+4. To add a document, calculate the SHA-256 and the size in bytes of the file. Call `get_upload_url` with them as `sha256` and `size_bytes`. Then send the same bytes with an HTTP PUT to `upload_url`. If `get_applicant_profile` shows `file_check` as `mismatch` or `missing`, upload the file again.
 5. Call `check_application` for a brand. It lists the required fields and documents that the profile cannot answer.
 
 ## What Linty does not do yet
