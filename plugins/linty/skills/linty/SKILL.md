@@ -13,13 +13,16 @@ Linty is a public index of the wholesale programs of food, beverage and pet bran
    A category has a page when it has 10 published brands. Without a page, `category` is null, and the result still lists the categories under the path.
 2. Call `find_brands` with `category`, `country`, `availability` or `q` (text). Send `submittable: true` to keep only the brands with a web form at their address.
 3. When `next_cursor` is not null, call `find_brands` again with `cursor` set to it, to get the next page.
-4. For each brand, call `get_relationship` with the brand slug. The result says where to apply and lists the fields and documents that the brand asks for.
+4. For each brand, call `get_relationship` with the brand slug. The result says where to apply and lists the fields, documents and terms that the brand asks for.
 
 ## Read the facts
 
 - `availability` has four values. `direct`: the brand sells direct. `indirect_only`: the brand sells only through distributors. `unavailable`: the brand does not sell wholesale. `unknown`: Linty has no evidence.
 - `unknown` is a complete answer. Do not guess. Tell the user that Linty has no evidence.
 - Each fact has a source and a date. Give the user the date with the fact.
+- Each requirement has `seen`: where Linty saw it, on the brand's page or in an application, and the date. A fact from the brand's page has its quote in `source`.
+- `last_checked_at` is the date that LintyBot last read the brand's page. A read is not a verification.
+- Read `terms` before the user applies. It says whether Linty read the agreement that the form asks the user to accept. Give the user `terms.note`.
 - A requirement is often "not verified": Linty saw the field on the form, but no person confirmed it.
 - For the full facts of one brand, call `get_brand`. For its company, call `get_company`.
 
