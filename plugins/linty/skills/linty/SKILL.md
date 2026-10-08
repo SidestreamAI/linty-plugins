@@ -1,6 +1,6 @@
 ---
 name: linty
-description: Find food, beverage and pet brands that sell direct with the Linty MCP server. See where to apply for a wholesale account, and read what each brand asks for. Use it when the user wants to stock a brand or open a wholesale account. Use it to make a list of brands to buy from.
+description: Find food, beverage and pet brands that sell direct with the Linty MCP server. See where to apply for a wholesale account, and read what each brand asks for. Use it when the user wants to stock a brand or open a wholesale account. Use it to make a list of brands to buy from. With an account, Linty can submit the application to the form of the brand.
 ---
 
 # Linty
@@ -11,7 +11,7 @@ Linty is a public index of the wholesale programs of food, beverage and pet bran
 
 1. To see the categories, call `list_categories`. Send a `path` to see the categories under it. Each count is for published brands.
    A category has a page when it has 10 published brands. Without a page, `category` is null, and the result still lists the categories under the path.
-2. Call `find_brands` with `category`, `country`, `availability` or `q` (text). Send `submittable: true` to keep only the brands with a web form at their address.
+2. Call `find_brands` with `category`, `country`, `availability` or `q` (text). Send `submittable: true` to keep only the brands with an active web form at their address that Linty can use.
 3. When `next_cursor` is not null, call `find_brands` again with `cursor` set to it, to get the next page.
 4. For each brand, call `get_relationship` with the brand slug. The result says where to apply and lists the fields, documents and terms that the brand asks for.
 
@@ -36,9 +36,54 @@ The account tools need a key. The user makes a key at linty.xyz/account and sets
 4. To add a document, calculate the SHA-256 and the size in bytes of the file. Call `get_upload_url` with them as `sha256` and `size_bytes`. Then send the same bytes with an HTTP PUT to `upload_url`. If `get_applicant_profile` shows `file_check` as `mismatch` or `missing`, upload the file again.
 5. Call `check_application` for a brand. It lists the required fields and documents that the profile cannot answer.
 
-## What Linty does not do yet
+## Submit an application
 
-Linty does not submit applications yet. `submit_application` answers `submission_not_open`. Give the user the address of the form, portal or email of the brand, from `get_relationship`.
+Linty submits each application to the form of the brand, in the name of the user. The user cannot recall an application. Ask the user before each submission.
+
+Submission is open only to some accounts now. Another account gets `submission_not_open`. Then give the user the address of the form, portal or email of the brand, from `get_relationship`.
+
+1. Call `check_application` for the brand. If `submittable` is false, Linty cannot apply to this brand. If `existing_application` is not null, the user has an application to this brand already: read it with `get_application`.
+2. If `missing_fields` or `missing_documents` is not empty, get the values or the files from the user first.
+3. If `attestations` is not empty, show the user each agreement before you submit. Show its `label`, its `agreement_url` and its `quote`. Show each `related` restriction with its `quote`.
+4. Linty accepts each agreement with `linty_accepts` true for the user when it submits. For a required agreement with `linty_accepts` false, the application asks the user later, in `questions`.
+5. If `terms.status` is not `read`, Linty did not read the agreement of the form. Give the user `terms.note`.
+6. Call `submit_application` with the brand slug. Send `answers` for form questions that the profile has no field for.
+7. Keep the `application_id`. If `existing` is true, the user has an application to this brand already, and Linty made no second one.
+8. Call `get_application` to see the status. Call `list_applications` to see every application of the account.
+
+An application holds 1 credit while it is in progress. Linty uses the credit only when the form of the brand shows a success message. Every other end gives the credit back.
+
+If `submit_application` answers an error, read `code`:
+
+- `profile_incomplete`: `missing` lists the profile values to add with `update_applicant_profile`.
+- `no_credit`: the account has no credit left. Tell the user to email hello@linty.xyz.
+- `daily_cap`: the account sent its daily maximum. Try again after `resets_at`.
+- `brand_busy`: Linty sent this brand its maximum for 7 days. Try again after `retry_after` seconds.
+- `not_submittable`: `reason` says why Linty cannot apply to this brand. For `walled`, Linty saw a bot check on the form that its browser cannot pass. For `site_policy`, a `robots.txt` file asks automated programs not to use the page or a part of it. Give the user the address of the form from `get_relationship`, so that the user can apply on the site of the brand.
+
+## What to do with each status
+
+- `queued` or `running`: Linty is at work. Call `get_application` again after 5 minutes.
+- `needs_answers`: read `questions`. Ask the user each question, and never invent an answer.
+  - For a question of the kind `document`, upload the file with `get_upload_url` first. If the profile has that file already, do not upload it again.
+  - For a question whose `key` is a profile field, send the value with `update_applicant_profile` in `fields`.
+  - For a question of the kind `attestation`, the form asks the user to accept an agreement. Show the user its `label`, and ask the user to accept it. Send `yes` only if the user accepts it. Linty keeps that answer for this application only. If the user does not accept it, cancel the application with `cancel_application`. Linty sends nothing to the brand, and the credit comes back.
+  - Then call `answer_questions` with the other answers, or with no answers. Linty queues the application again.
+- `submitted`: the form showed a success message. The brand replies to the email address of the profile. `accepted_attestations` lists the agreements that Linty accepted for the user.
+- `needs_followup`: the brand asks the user to do an action. Tell the user `followup.action` and `followup.deadline`.
+- `unconfirmed`: Linty sent the form, but the page showed no success message. The brand can have the application. Linty does not send it again.
+  - Tell the user to look in the inbox of the profile email for a reply from the brand.
+  - After 7 days with no reply from the brand, the user can release the application. Ask the user first. Then call `release_application`, and apply again with `submit_application`.
+  - If the brand has the first application, the second one reaches it too. `unconfirmed_cause` says why Linty could not confirm the first one.
+- `not_submitted`: the credit is back. Read `reason`.
+  - `blocked`: a bot check on the form of the brand stopped Linty. Linty sent nothing. Tell the user, and give the address of the form from `get_relationship`. The user can apply on the site of the brand.
+  - `unsupported`: the form asks for a value or a file that Linty cannot send yet. Linty sent nothing. Tell the user, and give the address of the form.
+  - `released`: the user released an unconfirmed application. You can call `submit_application` again for this brand.
+  - `no_form_found`: Linty found no form that it can fill. Linty sent nothing. Call `check_application` before you call `submit_application` again: the form can be one that Linty does not apply to now.
+  - For another reason, Linty sent nothing, and you can call `submit_application` again for this brand.
+- `cancelled`: the user cancelled the application.
+
+To stop an application, call `cancel_application`. It works only while the status is `queued` or `needs_answers`.
 
 ## Report a wrong fact
 
