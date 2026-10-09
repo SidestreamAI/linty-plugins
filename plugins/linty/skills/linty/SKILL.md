@@ -59,7 +59,7 @@ If `submit_application` answers an error, read `code`:
 - `no_credit`: the account has no credit left. Tell the user to email hello@linty.xyz.
 - `daily_cap`: the account sent its daily maximum. Try again after `resets_at`.
 - `brand_busy`: Linty sent this brand its maximum for 7 days. Try again after `retry_after` seconds.
-- `not_submittable`: `reason` says why Linty cannot apply to this brand. For `walled`, Linty saw a bot check on the form that its browser cannot pass. For `site_policy`, a `robots.txt` file asks automated programs not to use the page or a part of it. Give the user the address of the form from `get_relationship`, so that the user can apply on the site of the brand.
+- `not_submittable`: `reason` says why Linty cannot apply to this brand. For `walled`, Linty saw a bot check on the form that its browser cannot pass. For `site_policy`, a `robots.txt` file asks automated programs not to use the page or a part of it. For `not_read`, Linty has no read of the page of the form that `robots.txt` allows, so Linty does not apply there now. Give the user the address of the form from `get_relationship`, so that the user can apply on the site of the brand.
 
 ## What to do with each status
 
