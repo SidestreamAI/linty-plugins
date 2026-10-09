@@ -32,7 +32,7 @@ The account tools need a key. The user makes a key at linty.xyz/account and sets
 
 1. Call `get_account` to see the credits and the profile values that a first application needs.
 2. Call `get_applicant_profile` to read the profile. The EIN and the resale certificate number are masked: never send a masked value back.
-3. Ask the user for each missing value. Then call `update_applicant_profile` with `fields`, `positioning` or `answers`. Never invent a value. Never send the EIN or the resale certificate number in `answers`. Send them in `fields`.
+3. Ask the user for each missing value. Then call `update_applicant_profile` with `fields`, `positioning` or `answers`. Never invent a value. Never send the EIN or the resale certificate number in `answers`. Send them in `fields`. Ask the user the unit of the orders: `truckload`, `pallet`, `case` or `unit`. Send it in `order_volume_unit`.
 4. To add a document, calculate the SHA-256 and the size in bytes of the file. Call `get_upload_url` with them as `sha256` and `size_bytes`. Then send the same bytes with an HTTP PUT to `upload_url`. If `get_applicant_profile` shows `file_check` as `mismatch` or `missing`, upload the file again.
 5. Call `check_application` for a brand. It lists the required fields and documents that the profile cannot answer.
 
@@ -66,7 +66,8 @@ If `submit_application` answers an error, read `code`:
 - `queued` or `running`: Linty is at work. Call `get_application` again after 5 minutes.
 - `needs_answers`: read `questions`. Ask the user each question, and never invent an answer.
   - For a question of the kind `document`, upload the file with `get_upload_url` first. If the profile has that file already, do not upload it again.
-  - For a question whose `key` is a profile field, send the value with `update_applicant_profile` in `fields`.
+  - For a question whose `key` is a profile field, send the value with `update_applicant_profile` in `fields`. That value replaces the profile value for each later form too.
+  - A `business_type` question has `options`, and none of them agrees with the business type of the profile. Show the options to the user. Send an option only if it is the business of the user. If the user picks `Other`, tell the user that Linty then selects `Other` on each later form that has it. If no option is the business of the user, cancel the application.
   - For a question of the kind `attestation`, the form asks the user to accept an agreement. Show the user its `label`, and ask the user to accept it. Send `yes` only if the user accepts it. Linty keeps that answer for this application only. If the user does not accept it, cancel the application with `cancel_application`. Linty sends nothing to the brand, and the credit comes back.
   - Then call `answer_questions` with the other answers, or with no answers. Linty queues the application again.
 - `submitted`: the form showed a success message. The brand replies to the email address of the profile. `accepted_attestations` lists the agreements that Linty accepted for the user.
