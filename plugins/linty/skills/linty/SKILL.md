@@ -36,6 +36,18 @@ The account tools need a key. The user makes a key at linty.xyz/account and sets
 4. To add a document, calculate the SHA-256 and the size in bytes of the file. Call `get_upload_url` with them as `sha256` and `size_bytes`. Then send the same bytes with an HTTP PUT to `upload_url`. If `get_applicant_profile` shows `file_check` as `mismatch` or `missing`, upload the file again.
 5. Call `check_application` for a brand. It lists the required fields and documents that the profile cannot answer.
 
+## Verify the contact email
+
+The `email` of the profile is the contact email: brands reply to it. Linty submits an application only when this address is verified. `get_applicant_profile` shows it in `email_verified`, and `check_application` in `contact_email_verified`.
+
+1. Call `verify_contact_email` without `code`. If the address is the sign-in email of a person in the account, the result says that it is verified. Then stop.
+2. Otherwise Linty sends a 6-digit code to the address. Tell the user to look in that inbox. Ask the user for the code.
+3. Call `verify_contact_email` with `code`. Never guess a code, and never send a code again after it worked.
+4. A code works for 15 minutes and for 5 tries. After that, call `verify_contact_email` without `code` to get a new code.
+5. If the user changes `email`, the new address is not verified. Verify it again before the next application.
+
+Linty sends no other email address to a brand. Each email field of a form gets the contact email. If a question in `questions` asks for an email address, answer it with the contact email. Never put an email address anywhere else: not in another answer, in `positioning` or in another field. Linty refuses it.
+
 ## Submit an application
 
 Linty submits each application to the form of the brand, in the name of the user. The user cannot recall an application. Ask the user before each submission.
@@ -56,6 +68,7 @@ An application holds 1 credit while it is in progress. Linty uses the credit onl
 If `submit_application` answers an error, read `code`:
 
 - `profile_incomplete`: `missing` lists the profile values to add with `update_applicant_profile`.
+- `contact_email_not_verified`: the contact email is not verified. Verify it with `verify_contact_email`, then call `submit_application` again.
 - `no_credit`: the account has no credit left. Tell the user to email hello@linty.xyz.
 - `daily_cap`: the account sent its daily maximum. Try again after `resets_at`.
 - `brand_busy`: Linty sent this brand its maximum for 7 days. Try again after `retry_after` seconds.
@@ -81,6 +94,7 @@ If `submit_application` answers an error, read `code`:
   - `unsupported`: the form asks for a value or a file that Linty cannot send yet. Linty sent nothing. Tell the user, and give the address of the form.
   - `released`: the user released an unconfirmed application. You can call `submit_application` again for this brand.
   - `no_form_found`: Linty found no form that it can fill. Linty sent nothing. Call `check_application` before you call `submit_application` again: the form can be one that Linty does not apply to now.
+  - `contact_email_not_verified`: the contact email was not verified when Linty started the application, or a value had another email address. Linty sent nothing. Verify it with `verify_contact_email`, then submit a new application.
   - For another reason, Linty sent nothing, and you can call `submit_application` again for this brand.
 - `cancelled`: the user cancelled the application.
 
