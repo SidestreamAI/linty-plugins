@@ -52,7 +52,7 @@ Linty sends no other email address to a brand. Each email field of a form gets t
 
 Linty submits each application to the form of the brand, in the name of the user. The user cannot recall an application. Ask the user before each submission.
 
-Submission is open only to some accounts now. Another account gets `submission_not_open`. Then give the user the address of the form, portal or email of the brand, from `get_relationship`.
+Linty submits only through the web form of the brand. It does not apply through a portal or by email. For those, give the user the address of the portal or the email from `get_relationship`.
 
 1. Call `check_application` for the brand. If `submittable` is false, Linty cannot apply to this brand. If `existing_application` is not null, the user has an application to this brand already: read it with `get_application`.
 2. If `missing_fields` or `missing_documents` is not empty, get the values or the files from the user first.
@@ -67,6 +67,7 @@ An application holds 1 credit while it is in progress. Linty uses the credit onl
 
 If `submit_application` answers an error, read `code`:
 
+- `submission_not_open`: submission is not open for this account. Give the user the address of the form from `get_relationship`.
 - `profile_incomplete`: `missing` lists the profile values to add with `update_applicant_profile`.
 - `contact_email_not_verified`: the contact email is not verified. Verify it with `verify_contact_email`, then call `submit_application` again.
 - `no_credit`: the account has no credit left. Tell the user to email hello@linty.xyz.
