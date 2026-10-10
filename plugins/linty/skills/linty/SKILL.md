@@ -5,12 +5,14 @@ description: Find food, beverage and pet brands that sell direct with the Linty 
 
 # Linty
 
-Linty is a public index of the wholesale programs of food, beverage and pet brands. The Linty MCP server reads the same records as linty.xyz. The free tools need no key. The account tools need a key.
+Linty is a directory of food, beverage and pet brands that sell wholesale direct. The Linty MCP server reads the same records as linty.xyz. The free tools need no key. The account tools need a key.
 
 ## Make a list of brands
 
 1. To see the categories, call `list_categories`. Send a `path` to see the categories under it. Each count is for published brands.
    A category has a page when it has 10 published brands. Without a page, `category` is null, and the result still lists the categories under the path.
+   `direct_count` counts the published brands that sell wholesale direct, by the rule of `evidence.kind`. In `category.brands`, those brands come first, each with `sells_direct` true.
+   A brand with `sells_direct` false can still have `availability: direct`: Linty did not find a page that shows that it sells wholesale direct. Call `get_relationship` to read its `evidence`.
 2. Call `find_brands` with `category`, `country`, `availability` or `q` (text). Send `submittable: true` to keep only the brands with an active web form at their address that Linty can use.
 3. When `next_cursor` is not null, call `find_brands` again with `cursor` set to it, to get the next page.
 4. For each brand, call `get_relationship` with the brand slug. The result says where to apply and lists the fields, documents and terms that the brand asks for.
