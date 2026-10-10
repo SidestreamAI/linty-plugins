@@ -23,6 +23,7 @@ Linty is a directory of food, beverage and pet brands that sell wholesale direct
 - `unknown` is a complete answer. Do not guess. Tell the user that Linty has no evidence.
 - `evidence.kind` says what the published read of the brand's page shows. `direct`: the brand sells wholesale direct. `marketplace`: the brand sells wholesale only through a marketplace, named in `evidence.marketplace`. `none`: Linty has no evidence from the page.
 - `open_account` is true when linty.xyz shows "Open an account" for the brand. It is false when `availability` is not `direct`, when the brand sells only through a marketplace, or when the page is gone.
+- `evidence_quote` gives the words on the brand's own page that show the first sentence of the summary. For `unavailable`, they are the words that closed the program. For a brand that sells only through a marketplace, they are the words that name the marketplace. In all other cases, it is null.
 - Each fact has a source and a date. Give the user the date with the fact.
 - Each requirement has `seen`: where Linty saw it, on the brand's page or in an application, and the date. A fact from the brand's page has its quote in `source`.
 - `last_checked_at` is the date that LintyBot last read the brand's page. A read is not a verification.
